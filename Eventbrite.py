@@ -196,8 +196,8 @@ class Eventbrite:
             'purpose': 'listing'
         }
 
-        result = self._post(f'https://www.eventbriteapi.com/v3/events/{event_id}/structured_content/{version_number}',
-                       self._get_headers(), json=data)
+        result = self._post(f'https://www.eventbriteapi.com/v3/events/{event_id}/structured_content/{version_number}/',
+                            self._get_headers(), json=data)
         return result
 
     def _add_question(self, event_id, data):
