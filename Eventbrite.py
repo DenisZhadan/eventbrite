@@ -4,18 +4,10 @@ from datetime import datetime, timezone, timedelta
 import os
 import requests
 
+from UTC import UTC
+
 
 class Eventbrite:
-    def __convert_to_utc(self, local_time_str, local_tz_str):
-        local_time = datetime.strptime(local_time_str, "%Y-%m-%dT%H:%M:%S")
-
-        # ToDo list of timezones
-        if local_tz_str == "Europe/Tallinn":
-            local_time = local_time.replace(tzinfo=timezone(timedelta(hours=3)))
-
-        utc_time = local_time.astimezone(timezone.utc)
-        return utc_time.strftime("%Y-%m-%dT%H:%M:%SZ")
-
     def _get_headers(self, type='application/json'):
         token = os.getenv('EVENTBRITE_API_TOKEN')
         headers = {
@@ -44,6 +36,7 @@ class Eventbrite:
             raise Exception(response.text)
 
     def _create_draft(self, name, timezone, start, end, currency, capacity):
+        utc = UTC()
         data = {
             'event': {
                 'name': {
@@ -51,11 +44,11 @@ class Eventbrite:
                 },
                 'start': {
                     'timezone': timezone,
-                    'utc': self.__convert_to_utc(start, timezone)
+                    'utc': utc.convert_to_utc(start, timezone)
                 },
                 'end': {
                     'timezone': timezone,
-                    'utc': self.__convert_to_utc(end, timezone)
+                    'utc': utc.convert_to_utc(end, timezone)
                 },
                 'currency': currency,
                 'capacity': capacity
@@ -230,6 +223,7 @@ class Eventbrite:
                           info['summary']
                           )
 
+        utc = UTC()
         ticket = self._add_tickets(event['id'],
                                    info['ticket']['name'],
                                    info['ticket']['quantity_total'],
@@ -237,7 +231,7 @@ class Eventbrite:
                                    info['ticket']['free'],
                                    info['ticket']['minimum_quantity'],
                                    info['ticket']['maximum_quantity'],
-                                   self.__convert_to_utc(info['start_local'], info['timezone']))
+                                   utc.convert_to_utc(info['start_local'], info['timezone']))
 
         content_result = self._add_content_text(event['id'], 1, info)
 
